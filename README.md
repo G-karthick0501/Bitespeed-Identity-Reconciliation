@@ -1,100 +1,39 @@
 Bitespeed Identity Reconciliation
-A backend service for identity reconciliation that links customer contacts based on shared email addresses or phone numbers.
-Live API
-Endpoint: https://bitespeed-identity-reconciliation-ld1y.onrender.com/identify
-Overview
-This service helps FluxKart.com maintain a unified view of their customers by linking different orders that might have been placed with different contact information.
-Tech Stack
-
-Node.js with TypeScript
-Express.js
-PostgreSQL
-Deployed on Render
-
-Database Schema
-sqlCREATE TABLE Contact (
-    id SERIAL PRIMARY KEY,
-    phoneNumber TEXT,
-    email TEXT,
-    linkedId INTEGER REFERENCES Contact(id),
-    linkPrecedence TEXT CHECK(linkPrecedence IN ('primary', 'secondary')),
-    createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    deletedAt TIMESTAMP
-);
-API Documentation
-Request
-POST /identify
-Content-Type: application/json
-
-{
-  "email": "string (optional)",
-  "phoneNumber": "string (optional)"
+Identity reconciliation service for linking customer contacts.
+API
+Live URL: https://bitespeed-identity-reconciliation-ld1y.onrender.com/identify
+Method: POST
+Request:
+json{
+  "email": "test@example.com",
+  "phoneNumber": "1234567890"
 }
-Response
+Response:
 json{
   "contact": {
-    "primaryContatctId": number,
-    "emails": string[],
-    "phoneNumbers": string[],
-    "secondaryContactIds": number[]
+    "primaryContatctId": 1,
+    "emails": ["test@example.com"],
+    "phoneNumbers": ["1234567890"],
+    "secondaryContactIds": []
   }
 }
-Note: The typo in primaryContatctId is intentional as per requirements.
-Examples
-Create new contact:
-bashcurl -X POST https://bitespeed-identity-reconciliation-ld1y.onrender.com/identify \
-  -H "Content-Type: application/json" \
-  -d '{"email": "test@example.com", "phoneNumber": "123456"}'
-Link contacts (same phone, different email):
-bashcurl -X POST https://bitespeed-identity-reconciliation-ld1y.onrender.com/identify \
-  -H "Content-Type: application/json" \
-  -d '{"email": "another@example.com", "phoneNumber": "123456"}'
-How It Works
+Setup
 
-New Contact: If no matches found, creates a new primary contact
-Partial Match: If email OR phone matches, creates a secondary contact linked to the primary
-Exact Match: Returns existing contact without creating duplicates
-Merge: When linking two primaries, the older one stays primary and the newer becomes secondary
+Clone repo
+Run npm install
+Create .env with your database URL
+Run npm run dev
 
-Local Setup
+How it works
 
-Clone the repo
-bashgit clone https://github.com/G-karthick0501/Bitespeed-Identity-Reconciliation.git
-cd Bitespeed-Identity-Reconciliation
-
-Install dependencies
-bashnpm install
-
-Set environment variables
-bash# .env file
-DATABASE_URL=postgresql://username:password@localhost:5432/bitespeed
-PORT=3000
-
-Run the server
-bashnpm run dev
-
+Links contacts with same email OR phone
+Oldest contact becomes primary
+Others become secondary
+Prevents duplicates
 
 Testing
-Run the test suite:
-bash# Test locally
 node tests/test.js
+Stack
+Node.js, TypeScript, Express, PostgreSQL
 
-# Test deployed service
-node tests/bitespeed-remote-test.js
-All 12 tests are passing.
-Project Structure
-├── src/
-│   ├── index.ts          # Main server file
-│   └── test-connection.ts
-├── tests/
-│   ├── test.js           # Test suite
-│   ├── bitespeed-remote-test.js
-│   └── check-db.js
-├── package.json
-├── tsconfig.json
-└── README.md
-Author
-Karthick G - @G-karthick0501
-
-Built for the Bitespeed Backend Task
+By Karthick G
